@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.2.1 — 2026-11-03
+
+- Seed database-first HTTP test data from the built application host instead of
+  creating a second DI container; isolate the test database per factory.
+- Test the SQLite simple API against an isolated SQLite in-memory database, not
+  EF's non-relational InMemory provider. Keep SQL Server provider limitations explicit.
+- Add a code-review evaluation for double-container test setup, strengthen evidence
+  line checks and guard example fixtures against the regression.
+- Point onboarding at the actual GitHub source and distinguish branch checkout from
+  reviewed, version-pinned installation.
+
 ## 2.2.0 — 2026-11-03
 
 - Add executable simple CRUD and SQL Server database-first examples, with an aggregate

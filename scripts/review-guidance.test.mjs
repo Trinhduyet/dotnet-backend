@@ -19,6 +19,7 @@ const requiredReviewIds = [
   'review-valid-single-health',
   'review-missing-cancellation',
   'review-di-lifetime',
+  'review-test-double-container',
   'review-unbounded-query',
   'review-unsafe-upload',
   'review-yarp-method-allowlist',
@@ -32,7 +33,7 @@ const requiredReviewIds = [
 test('evaluation fixtures remain well-formed after anti-pattern expansion', () => {
   assert.equal(checkFixtures(), scenarios.cases.length);
   assert.ok(scenarios.cases.length >= 24);
-  assert.equal(scenarios.cases.filter(item => item.kind === 'static-review-fixture').length, 21);
+  assert.equal(scenarios.cases.filter(item => item.kind === 'static-review-fixture').length, 22);
 });
 
 test('required anti-pattern and non-finding review fixtures exist with evidence', () => {
@@ -97,4 +98,17 @@ test('this suite is fixture/static guidance evidence, not an AI behavior measure
   const readme = readFileSync(join(commonRoot, 'evals/README.md'), 'utf8');
   assert.match(readme, /do \*\*not\*\* measure AI behavior/i);
   assert.match(readme, /Model-based grading/);
+});
+
+test('example integration tests use the application host, not a second service provider', () => {
+  const catalog = readFileSync(join(commonRoot, 'examples/sqlserver-database-first/tests/DatabaseFirst.Tests/CatalogApiTests.cs'), 'utf8');
+  const items = readFileSync(join(commonRoot, 'examples/simple-api/tests/SimpleApi.Tests/ItemsApiTests.cs'), 'utf8');
+  for (const source of [catalog, items]) {
+    assert.doesNotMatch(source, /BuildServiceProvider\s*\(/);
+    assert.match(source, /protected override IHost CreateHost\(/);
+    assert.match(source, /host\.Services\.CreateScope\(/);
+  }
+  assert.doesNotMatch(catalog, /static IServiceProvider/);
+  assert.match(items, /UseSqlite\(_connection\)/);
+  assert.match(items, /Database\.EnsureCreated\(\)/);
 });

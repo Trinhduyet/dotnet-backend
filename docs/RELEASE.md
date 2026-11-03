@@ -47,7 +47,7 @@ The implemented packaging command verifies first and refuses to overwrite an exi
 archive. Use a destination outside the source checkout:
 
 ```sh
-node scripts/package-release.mjs --output ../dotnet-backend-common-2.0.0.zip
+node scripts/package-release.mjs --output ../dotnet-backend-common-2.2.1.zip
 ```
 
 Python uses only its standard ZIP library for packaging; verification uses the pinned
@@ -55,8 +55,11 @@ validation environment. Extract with a normal ZIP tool and run verify-toolkit in
 extracted root before distribution. No dependency download or marketplace publication
 occurs in this command.
 
-GitLab CI has one verify job, no deployment/marketplace automation. Publisher creates
-the authorized GitLab repository/tag and pushes only after review; the task does not
-claim a remote exists. A registry is not required for native artifact copies.
+The source is on GitHub. The included GitLab configuration defines two jobs
+(toolkit verification and .NET examples), but it requires an explicitly configured
+GitLab project/runner; GitHub does not execute `.gitlab-ci.yml` automatically.
+There is no deployment/marketplace automation. Publication of a version tag,
+release, or any remote change requires explicit authorization. A registry is not
+required for native artifact copies.
 Marketplace-ready additionally requires that chosen host's current packaging/review
 requirements. Native-copy assets alone are not a marketplace submission.

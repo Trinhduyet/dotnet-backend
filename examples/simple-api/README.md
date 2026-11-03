@@ -1,7 +1,8 @@
 # Simple API example
 
 Runnable ASP.NET Core controller → service → EF Core `DbContext` CRUD slice.
-The sample uses SQLite at runtime and a test-only in-memory provider. It shows
+The sample uses SQLite at runtime and an isolated SQLite in-memory connection in
+its HTTP tests (kept open for the test host's lifetime). It shows
 request/response contracts, automatic `[ApiController]` validation, `ProblemDetails`,
 DI, async database calls, cancellation propagation and an HTTP behavior test.
 

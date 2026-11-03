@@ -18,7 +18,7 @@ evaluator reports BLOCKED/SKIPPED for that layer.
 Static review cases cover controller/service boundaries, DTO ownership, repositories,
 database strategy, environment configuration, cancellation, DI lifetimes, EF query
 bounds, upload safety, Public/Admin access, proxy methods, exception mapping, request
-validation and intentional non-findings. Every case records severity, evidence needed,
+validation, test-host DI/container setup and intentional non-findings. Every case records severity, evidence needed,
 the correction, and false-positive conditions. `validationCommand` documents a local
 check; fixture integrity does not execute that command or prove semantic architecture
 intent. Static validators can check shape and links; only review against the actual

@@ -11,3 +11,7 @@ Build with `dotnet build examples/sqlserver-database-first/src/DatabaseFirst/Dat
 A reachable SQL Server and provisioned schema are required to run the API; this sample
 does not claim a live SQL Server integration test. Keep schema ownership, provisioning,
 upgrade/rollback scripts, and runtime connectivity as distinct operational concerns.
+
+The HTTP test substitutes EF Core InMemory to exercise routing, DI and projection.
+It seeds from the built test host (no second service provider) and asserts mapping
+metadata, but cannot verify SQL Server collation, decimal or transactional behavior.

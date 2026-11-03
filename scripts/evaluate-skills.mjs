@@ -11,11 +11,13 @@ export function checkFixtures(data = scenarios) {
   if (data.schemaVersion !== 1 || !Array.isArray(data.cases) || data.cases.length < 7) throw new Error('Invalid evaluation suite');
   const ids = new Set();
   for (const item of data.cases) {
-    if (!item.id || ids.has(item.id) || !item.prompt || !item.expect || !item.files || !Array.isArray(item.allowedChanges) || item.skills.some(n => !skills.includes(n))) throw new Error('Invalid/duplicate evaluation case');
+    if (!item.id || ids.has(item.id) || !item.prompt || !item.expect || !item.files || Array.isArray(item.files)
+        || !Array.isArray(item.skills) || !Array.isArray(item.allowedChanges) || item.skills.some(n => !skills.includes(n))) throw new Error('Invalid/duplicate evaluation case');
     if (item.kind === 'static-review-fixture' && (!['P0', 'P1', 'P2', 'P3', 'none'].includes(item.severity) || !Array.isArray(item.evidenceRequired) || !item.evidenceRequired.length || !item.recommendation || !Array.isArray(item.falsePositiveConditions) || !item.falsePositiveConditions.length)) throw new Error(`Static review fixture lacks severity/evidence/recommendation/false-positive conditions: ${item.id}`);
     ids.add(item.id);
     for (const name of [...Object.keys(item.files), ...item.allowedChanges]) safePath(root, name);
-    if (item.expect.file && !item.files[item.expect.file]?.split('\n')[item.expect.line - 1]?.includes('Address')) throw new Error('Review oracle has an invalid evidence line');
+    if (item.expect.file && (!Number.isInteger(item.expect.line) || item.expect.line < 1
+        || !item.files[item.expect.file]?.split('\n')[item.expect.line - 1]?.trim())) throw new Error('Review oracle has an invalid evidence line');
   }
   return data.cases.length;
 }

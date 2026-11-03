@@ -19,6 +19,11 @@ do not change assertions or skip cases to hide defects.
 | Bug | Regression exposing the trigger while preserving valid behavior |
 
 Test observable behavior, not private implementation or artificial coverage targets.
+In ASP.NET Core integration tests, replace dependencies in the test host and seed
+through the built host's service scope. Do not call `BuildServiceProvider()` inside
+`ConfigureServices`: it creates a second container. Prefer SQLite in-memory when
+the runtime uses SQLite, keeping its connection open for the test lifetime. When
+substituting an EF provider, state which SQL/provider semantics remain untested.
 Reset only isolated test-owned data. Missing Docker is BLOCKED, not a code failure.
 SQLite/mocks do not prove SQL Server precision, collation, rowversion or locking.
 Test hosts must not inherit live logging/notification sinks or production credentials.

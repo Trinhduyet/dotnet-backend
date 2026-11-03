@@ -7,12 +7,17 @@ consumer gate. Native skills use the consumer's existing validation commands.
 ## Obtain toolkit and prerequisites
 
 Get a trusted reviewed source checkout/archive; no remote is created by the installer.
-After the project publishes the current `VERSION` as a GitLab release/tag, substitute
-your actual host/group:
+This is the repository's actual public source URL, not a claim that a version tag
+or GitHub release already exists:
 
 ```sh
-git clone --branch v2.2.0 --depth 1 https://gitlab.com/YOUR_GROUP/dotnet-backend-common.git
+git clone https://github.com/Trinhduyet/dotnet-backend.git dotnet-backend-common
+git -C dotnet-backend-common rev-parse HEAD
 ```
+
+Review that commit and check out an approved immutable commit/tag before installation
+into production projects; `main` can change and is not a version pin. The installer
+does not fetch updates itself.
 
 Node 22/24 and Python 3.11+/PyYAML run installer/policy. The isolated development
 requirements also provide official specification validation. Install the SDK selected

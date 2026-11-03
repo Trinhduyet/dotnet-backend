@@ -2,10 +2,12 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using SimpleApi.DTOs.Responses;
 using SimpleApi.Infrastructure.Database;
 using Xunit;
@@ -34,10 +36,28 @@ public sealed class ItemsApiTests : IClassFixture<ItemsFactory>
 
 public sealed class ItemsFactory : WebApplicationFactory<Program>
 {
+    private readonly SqliteConnection _connection = new("Data Source=:memory:");
+
+    public ItemsFactory() => _connection.Open();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureServices(services =>
     {
         services.RemoveAll<DbContextOptions<ItemsDbContext>>();
         services.RemoveAll<IDbContextOptionsConfiguration<ItemsDbContext>>();
-        services.AddDbContext<ItemsDbContext>(options => options.UseInMemoryDatabase("simple-api-tests"));
+        services.AddDbContext<ItemsDbContext>(options => options.UseSqlite(_connection));
     });
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+        using var scope = host.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<ItemsDbContext>().Database.EnsureCreated();
+        return host;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _connection.Dispose();
+        base.Dispose(disposing);
+    }
 }

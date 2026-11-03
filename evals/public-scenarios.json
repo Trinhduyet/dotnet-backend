@@ -848,6 +848,38 @@
       ],
       "validationCommand": "node scripts/evaluate-skills.mjs --check",
       "severity": "P2"
+    },
+    {
+      "id": "review-test-double-container",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this ASP.NET Core integration-test fixture for reliable host setup and DI. The test expects seeded records from the HTTP host. Report concrete defects, without requiring a particular architecture for production services.",
+      "files": {
+        "tests/CatalogApiTests.cs": "public class CatalogFactory : WebApplicationFactory<Program> { protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureServices(services => { services.AddDbContext<CatalogDbContext>(o => o.UseInMemoryDatabase(\"catalog\")); var provider = services.BuildServiceProvider(); using var scope = provider.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>(); db.Products.Add(new Product(\"Alpha\")); db.SaveChanges(); }); }\n",
+        "tests/CatalogHttpTests.cs": "[Fact] public async Task Get_products_returns_seeded_items() { var client = factory.CreateClient(); var items = await client.GetFromJsonAsync<ProductResponse[]>(\"/api/catalog/products\"); Assert.Single(items!); }\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "test-builds-second-service-provider",
+        "severity": "P2"
+      },
+      "nonFindings": [
+        "no repository abstraction in production",
+        "using an in-memory provider for HTTP-only tests with stated limitations"
+      ],
+      "evidenceRequired": [
+        "tests/CatalogApiTests.cs BuildServiceProvider inside ConfigureServices",
+        "tests/CatalogHttpTests.cs assertion against data returned from the actual HTTP host"
+      ],
+      "recommendation": "Register the test DbContext override in ConfigureServices, then seed through a scope from the built WebApplicationFactory host. Use an isolated database name/connection and verify the HTTP response. Add actual-provider tests for SQL Server-specific behavior.",
+      "falsePositiveConditions": [
+        "the extra provider is intentionally isolated from the HTTP host and no shared state is asserted",
+        "the application host is seeded separately and the temporary provider is disposed for a different justified operation"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2"
     }
   ]
 }

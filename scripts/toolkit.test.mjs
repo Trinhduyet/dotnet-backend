@@ -167,6 +167,15 @@ test('safety checks reject synthetic secrets, absolute project paths and unsafe 
   assert.equal(checkText('Never print secrets or use destructive operations.', 'safe').length, 0);
 });
 
+test('evaluation evidence lines are validated without YARP-specific keywords', () => {
+  const cases = structuredClone(scenarios);
+  const review = cases.cases.find(item => item.expect.file);
+  review.files[review.expect.file] = review.files[review.expect.file].replace('Address', 'Endpoint');
+  assert.equal(checkFixtures(cases), cases.cases.length);
+  review.expect.line = 999;
+  assert.throws(() => checkFixtures(cases), /invalid evidence line/);
+});
+
 test('evaluation grader rejects wrong activation, scope, semantics and unsupported PASS', t => {
   const f = fixture(t); assert.equal(checkFixtures(), scenarios.cases.length);
   assert.ok(scenarios.cases.length >= 19);

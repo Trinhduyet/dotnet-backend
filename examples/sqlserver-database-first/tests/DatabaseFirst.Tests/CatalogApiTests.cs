@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using DatabaseFirst.DTOs;
 using DatabaseFirst.Infrastructure.Database;
 using Xunit;
@@ -13,7 +14,13 @@ using Xunit;
 public sealed class CatalogApiTests : IClassFixture<CatalogFactory>
 {
     private readonly HttpClient _client;
-    public CatalogApiTests(CatalogFactory factory) => _client = factory.CreateClient();
+    private readonly CatalogFactory _factory;
+
+    public CatalogApiTests(CatalogFactory factory)
+    {
+        _factory = factory;
+        _client = factory.CreateClient();
+    }
 
     [Fact]
     public async Task Query_is_bounded_and_uses_configured_mapping()
@@ -23,7 +30,7 @@ public sealed class CatalogApiTests : IClassFixture<CatalogFactory>
         Assert.NotNull(rows);
         Assert.Equal(2, rows.Length);
         Assert.Equal("Alpha", rows[0].Name);
-        await using var scope = CatalogFactory.ServicesProvider!.CreateAsyncScope();
+        await using var scope = _factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
         var property = db.Model.FindEntityType(typeof(Product))!.FindProperty(nameof(Product.Price))!;
         Assert.Equal(18, property.GetPrecision());
@@ -33,17 +40,22 @@ public sealed class CatalogApiTests : IClassFixture<CatalogFactory>
 
 public sealed class CatalogFactory : WebApplicationFactory<Program>
 {
-    internal static IServiceProvider? ServicesProvider { get; private set; }
+    private readonly string _databaseName = $"catalog-tests-{Guid.NewGuid():N}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureServices(services =>
     {
         services.RemoveAll<DbContextOptions<CatalogDbContext>>();
         services.RemoveAll<IDbContextOptionsConfiguration<CatalogDbContext>>();
-        services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase("database-first-tests"));
-        var provider = services.BuildServiceProvider();
-        using var scope = provider.CreateScope();
+        services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+    });
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+        using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
         db.Products.AddRange(new Product("Alpha", 12.3400m), new Product("Beta", 20.0000m), new Product("Gamma", 3.2500m));
         db.SaveChanges();
-        ServicesProvider = provider;
-    });
+        return host;
+    }
 }
