@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/document-upload/"><Project Path="document-upload/src/DocumentUpload.Api/DocumentUpload.Api.csproj" /><Project Path="document-upload/tests/DocumentUpload.Tests/DocumentUpload.Tests.csproj" /></Folder>
+  <Folder Name="/simple-api/"><Project Path="simple-api/src/SimpleApi/SimpleApi.csproj" /><Project Path="simple-api/tests/SimpleApi.Tests/SimpleApi.Tests.csproj" /></Folder>
+  <Folder Name="/sqlserver-database-first/"><Project Path="sqlserver-database-first/src/DatabaseFirst/DatabaseFirst.csproj" /><Project Path="sqlserver-database-first/tests/DatabaseFirst.Tests/DatabaseFirst.Tests.csproj" /></Folder>
+</Solution>

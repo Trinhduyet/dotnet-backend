@@ -1,0 +1,853 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "development-endpoint",
+      "skills": [
+        "dotnet-development"
+      ],
+      "requiresPatch": true,
+      "prompt": "Add GET /api/items/{id} in this existing Controller/Service project. Preserve the architecture, return a response DTO, forward cancellation, and test found/missing items.",
+      "files": {
+        "src/ItemsController.cs": "// Thin controller; ItemsService already owns queries.\n",
+        "src/ItemsService.cs": "// GetAsync accepts id and CancellationToken.\n",
+        "tests/ItemsTests.cs": "// Existing HTTP fixture.\n"
+      },
+      "allowedChanges": [
+        "src/ItemsController.cs",
+        "src/ItemsService.cs",
+        "src/ItemResponse.cs",
+        "tests/ItemsTests.cs"
+      ],
+      "expect": {
+        "dtoSeparated": true,
+        "cancellationForwarded": true,
+        "foundStatus": 200,
+        "missingStatus": 404,
+        "meaningfulTests": true
+      }
+    },
+    {
+      "id": "review-yarp-docker",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "prompt": "Review this YARP configuration for the supplied Docker Compose topology. Report confirmed issues with location and minimal correction; do not change code.",
+      "files": {
+        "appsettings.json": "{\n  \"ReverseProxy\": {\n    \"Clusters\": {\n      \"catalog\": {\n        \"Destinations\": {\n          \"api\": { \"Address\": \"http://localhost:8080/\" }\n        }\n      }\n    }\n  }\n}\n",
+        "compose.yml": "services:\n  proxy:\n    image: proxy:reviewed\n  catalog-api:\n    image: catalog:reviewed\n    expose: ['8080']\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "loopback-destination",
+        "file": "appsettings.json",
+        "line": 6,
+        "destination": "http://catalog-api:8080/",
+        "severity": "P1"
+      },
+      "kind": "static-review-fixture",
+      "severity": "P1",
+      "evidenceRequired": [
+        "effective YARP destination and Docker service name/network"
+      ],
+      "recommendation": "Use the reachable compose service address from the proxy container, then verify network DNS and upstream port against the supplied topology.",
+      "nonFindings": [
+        "localhost is correct when proxy and upstream share host networking",
+        "the service name is not resolvable on the configured network"
+      ],
+      "falsePositiveConditions": [
+        "localhost is correct when proxy and upstream share host networking",
+        "the service name is not resolvable on the configured network"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check"
+    },
+    {
+      "id": "debugging-empty-source",
+      "skills": [
+        "dotnet-debugging"
+      ],
+      "requiresPatch": true,
+      "prompt": "Diagnose why this API returns HTTP 200 and [] when its required source file disappears. Preserve legitimate zero-item results and add regression coverage.",
+      "files": {
+        "src/ItemService.cs": "// Required catalog source; missing file is not a valid empty catalog.\nif (!File.Exists(path)) return [];\n",
+        "tests/ItemTests.cs": "// Valid empty file should still return an empty collection.\n"
+      },
+      "allowedChanges": [
+        "src/ItemService.cs",
+        "tests/ItemTests.cs"
+      ],
+      "expect": {
+        "issue": "missing-required-source",
+        "validEmptyStatus": 200,
+        "missingSourceStatus": 503,
+        "regressionBothPaths": true
+      }
+    },
+    {
+      "id": "database-mapping",
+      "skills": [
+        "dotnet-database"
+      ],
+      "requiresPatch": true,
+      "prompt": "Improve this SQL Server mapping in a database-first project. The approved schema uses decimal(18,4) and permits physical FKs. Update mapping without migrations or changing the schema/FK policy.",
+      "files": {
+        "database/schema.sql": "-- Approved desired schema: Amount decimal(18,4); physical FK policy enabled.\n",
+        "src/AmountMapping.cs": "// Mapping currently uses float for Amount.\n"
+      },
+      "allowedChanges": [
+        "src/AmountMapping.cs",
+        "tests/AmountMappingTests.cs"
+      ],
+      "expect": {
+        "clrType": "decimal",
+        "precision": 18,
+        "scale": 4,
+        "migrationsAdded": false,
+        "foreignKeyPolicyChanged": false
+      }
+    },
+    {
+      "id": "deployment-readiness",
+      "skills": [
+        "dotnet-deployment"
+      ],
+      "prompt": "Review this GitLab deployment job. The API process can start before its required source is ready. Prepare a scoped correction; do not execute a live rollout.",
+      "files": {
+        ".gitlab-ci.yml": "deploy:\n  script:\n    - docker compose up -d api\n    - echo deployment succeeded\n",
+        "readiness-contract.md": "GET /health/ready is 200 only after the required source is ready; timeout/failure must fail the job.\n"
+      },
+      "allowedChanges": [
+        ".gitlab-ci.yml"
+      ],
+      "expect": {
+        "issue": "process-start-not-readiness",
+        "readinessPath": "/health/ready",
+        "boundedWait": true,
+        "failurePropagates": true,
+        "liveRolloutExecuted": false
+      }
+    },
+    {
+      "id": "testing-api",
+      "skills": [
+        "dotnet-testing"
+      ],
+      "prompt": "Plan meaningful API integration tests for the documented endpoint, including DTO validation, DI startup and missing resources; unavailable SQL Server must be reported separately.",
+      "files": {
+        "contract.md": "POST invalid input -> 400; GET missing -> 404.\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "httpIntegration": true,
+        "invalidStatus": 400,
+        "missingStatus": 404,
+        "sqlServerEvidence": "BLOCKED"
+      }
+    },
+    {
+      "id": "api-contract",
+      "skills": [
+        "dotnet-api-design"
+      ],
+      "prompt": "Design a backward-compatible DTO change and ProblemDetails errors for an existing ASP.NET Core API; no proxy or auth framework is needed.",
+      "files": {
+        "contract.md": "Existing route and client fields must remain compatible.\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "existingContractPreserved": true,
+        "entityNotExposed": true,
+        "problemDetails": true,
+        "authFrameworkAdded": false
+      }
+    },
+    {
+      "id": "negative-translation",
+      "skills": [],
+      "prompt": "Translate the sentence 'The meeting starts tomorrow' into Vietnamese.",
+      "files": {},
+      "allowedChanges": [],
+      "expect": {
+        "engineeringSkillActivated": false
+      }
+    },
+    {
+      "id": "negative-review-not-deploy",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "prompt": "Read-only review of a Dockerfile. Do not deploy anything or rewrite the API.",
+      "files": {
+        "Dockerfile": "FROM example:reviewed\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "liveRolloutExecuted": false,
+        "sourceRewritten": false
+      }
+    },
+    {
+      "id": "review-dto-in-services",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this ASP.NET Core project that already uses DTOs/Requests and DTOs/Responses. Flag transport contracts incorrectly defined inside Services. Do not rewrite architecture.",
+      "files": {
+        "memory/DECISIONS.md": "ACTIVE: Request/response DTOs live under DTOs/Requests and DTOs/Responses.\n",
+        "src/Services/CategoriesService.cs": "namespace Contoso.Api.Services;\npublic sealed record CreateCategoryRequest(string Name);\npublic sealed class CategoriesService { }\n",
+        "src/DTOs/Responses/CategoryResponse.cs": "namespace Contoso.Api.DTOs.Responses;\npublic sealed record CategoryResponse(int Id, string Name);\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "dto-inside-services",
+        "severity": "P2",
+        "suggestedLocation": "DTOs/Requests",
+        "forcedFolderRename": false
+      },
+      "nonFindings": [
+        "missing-mediatr",
+        "missing-repository"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2",
+      "evidenceRequired": [
+        "memory/DECISIONS.md",
+        "src/Services/CategoriesService.cs",
+        "src/DTOs/Responses/CategoryResponse.cs"
+      ],
+      "recommendation": "Correct dto-inside-services with the smallest change consistent with the supplied project contract.",
+      "falsePositiveConditions": [
+        "missing-mediatr",
+        "missing-repository"
+      ]
+    },
+    {
+      "id": "review-translation-overmodel",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-database"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this content model. Requirements only need English and Spanish names on Category. Flag unnecessary translation ownership/reference tables. Do not drop existing relationships without analysis.",
+      "files": {
+        "requirements.md": "Category needs NameEn and NameEs only; no shared translation reuse.\n",
+        "src/Entities/Category.cs": "public sealed class Category { public int Id { get; set; } }\n",
+        "src/Entities/TranslationOwnership.cs": "public sealed class TranslationOwnership { public int OwnerId { get; set; } public string OwnerType { get; set; } = \"\"; public int TranslationId { get; set; } }\n",
+        "src/Entities/TranslationReference.cs": "public sealed class TranslationReference { public int TranslationId { get; set; } public string Locale { get; set; } = \"\"; }\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "unnecessary-translation-ownership",
+        "severity": "P2",
+        "preferEntityOwnedContent": true,
+        "removedRelationshipsWithoutAnalysis": false
+      },
+      "nonFindings": [
+        "missing-mediatr"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2",
+      "evidenceRequired": [
+        "requirements.md",
+        "src/Entities/Category.cs",
+        "src/Entities/TranslationOwnership.cs",
+        "src/Entities/TranslationReference.cs"
+      ],
+      "recommendation": "Correct unnecessary-translation-ownership with the smallest change consistent with the supplied project contract.",
+      "falsePositiveConditions": [
+        "missing-mediatr"
+      ]
+    },
+    {
+      "id": "review-thick-upload-controller",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this multipart upload endpoint. Flag validation, storage and persistence orchestration concentrated in the Controller. Prefer a cohesive Service.",
+      "files": {
+        "src/Controllers/CategoryDocumentsController.cs": "public async Task<IActionResult> Upload(IFormFile file) {\n  if (file.Length > max) return BadRequest();\n  await blob.UploadAsync(file.OpenReadStream());\n  db.Documents.Add(new Document());\n  await db.SaveChangesAsync();\n  return Ok();\n}\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "thick-multipart-controller",
+        "severity": "P1",
+        "moveOrchestrationToService": true
+      },
+      "nonFindings": [
+        "missing-unit-of-work"
+      ],
+      "validationCommand": "dotnet test examples/document-upload/DocumentUpload.slnx -c Release",
+      "severity": "P1",
+      "evidenceRequired": [
+        "src/Controllers/CategoryDocumentsController.cs"
+      ],
+      "recommendation": "Correct thick-multipart-controller with the smallest change consistent with the supplied project contract.",
+      "falsePositiveConditions": [
+        "missing-unit-of-work"
+      ]
+    },
+    {
+      "id": "review-public-admin-leak",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review Admin versus Public boundaries. Schema/category management is Admin-only, but a Public GET still returns management fields. Do not invent an identity provider.",
+      "files": {
+        "memory/DECISIONS.md": "ACTIVE: Category management is Admin-only; Public may list published summaries only.\n",
+        "src/Controllers/Public/CategoriesController.cs": "[Route(\"api/public/categories\")]\npublic sealed class CategoriesController {\n  [HttpGet] public Task<List<CategoryAdminDto>> List() => categories.ListAdminAsync();\n}\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "admin-data-on-public-route",
+        "severity": "P0",
+        "routeNameIsNotAuthorization": true,
+        "inventedAuthProvider": false
+      },
+      "nonFindings": [
+        "missing-health-ready"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P0",
+      "evidenceRequired": [
+        "memory/DECISIONS.md",
+        "src/Controllers/Public/CategoriesController.cs"
+      ],
+      "recommendation": "Correct admin-data-on-public-route with the smallest change consistent with the supplied project contract.",
+      "falsePositiveConditions": [
+        "missing-health-ready"
+      ]
+    },
+    {
+      "id": "review-migrations-vs-database-first",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-database"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "This project approved database-first SQL scripts as schema source of truth. Review the addition of EF Migrations and startup Migrate(). Do not prohibit Migrations in deliberate code-first projects.",
+      "files": {
+        "memory/DECISIONS.md": "ACTIVE: database-first; canonical SQL under database/; no production auto-migrate.\n",
+        "database/schema.sql": "CREATE TABLE dbo.Categories (Id INT NOT NULL PRIMARY KEY);\n",
+        "src/Program.cs": "app.Services.GetRequiredService<DbContext>().Database.Migrate();\n",
+        "src/Migrations/20260101000000_Init.cs": "// EF Migration added as schema source of truth\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "migrations-against-database-first",
+        "severity": "P1",
+        "autoMigrateAtStartup": true,
+        "globalMigrationsBan": false
+      },
+      "nonFindings": [
+        "code-first-migrations-always-wrong"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P1",
+      "evidenceRequired": [
+        "memory/DECISIONS.md",
+        "database/schema.sql",
+        "src/Program.cs",
+        "src/Migrations/20260101000000_Init.cs"
+      ],
+      "recommendation": "Correct migrations-against-database-first with the smallest change consistent with the supplied project contract.",
+      "falsePositiveConditions": [
+        "code-first-migrations-always-wrong"
+      ]
+    },
+    {
+      "id": "review-hardcoded-environment-config",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this synthetic production configuration fixture for unsafe committed configuration. All values are deliberately fictional test data.",
+      "files": {
+        "appsettings.Production.json": "{\n  \"ConnectionStrings\": {\n    \"Default\": \"Server=example.invalid;User ID=fixture;Password=FAKE_TEST_VALUE\"\n  }\n}\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "hardcoded-environment-config",
+        "severity": "P1",
+        "secretInTrackedConfig": true,
+        "environmentHostCommitted": true
+      },
+      "nonFindings": [
+        "entra-required-for-all-apps"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P1",
+      "evidenceRequired": [
+        "tracked configuration file and values",
+        "Identify the deliberately synthetic hardcoded credential in the tracked sample configuration."
+      ],
+      "recommendation": "Move environment-specific configuration and credentials to approved runtime configuration and secret storage.",
+      "falsePositiveConditions": [
+        "entra-required-for-all-apps"
+      ]
+    },
+    {
+      "id": "review-category-case-uniqueness",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-database"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review CategoryType uniqueness. Values Issuance and issuance both insert successfully. Recommend canonicalization and schema uniqueness without silently rewriting intentional display labels.",
+      "files": {
+        "src/Services/CategoriesService.cs": "if (db.Categories.Any(c => c.CategoryType == request.CategoryType)) throw new ConflictException();\ndb.Categories.Add(new Category { CategoryType = request.CategoryType });\n",
+        "database/schema.sql": "CREATE TABLE dbo.Categories (CategoryType NVARCHAR(64) NOT NULL);\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "case-variant-uniqueness-bypass",
+        "severity": "P1",
+        "needsCanonicalization": true,
+        "applicationOnlyCheckRaces": true
+      },
+      "nonFindings": [
+        "silent-display-label-rewrite-required"
+      ],
+      "validationCommand": "dotnet test examples/document-upload/DocumentUpload.slnx -c Release --filter CategoryKeyTests",
+      "severity": "P1",
+      "evidenceRequired": [
+        "src/Services/CategoriesService.cs",
+        "database/schema.sql"
+      ],
+      "recommendation": "Correct case-variant-uniqueness-bypass with the smallest change consistent with the supplied project contract.",
+      "falsePositiveConditions": [
+        "silent-display-label-rewrite-required"
+      ]
+    },
+    {
+      "id": "review-valid-lean-architecture",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this lean Controller → Service → DbContext API. Confirm that absence of MediatR, generic repository and Unit of Work is valid. Do not recommend those patterns without a demonstrated need.",
+      "files": {
+        "src/Controllers/ItemsController.cs": "public sealed class ItemsController(ItemsService items) : ControllerBase { }\n",
+        "src/Services/ItemsService.cs": "public sealed class ItemsService(AppDbContext db) { }\n",
+        "memory/DECISIONS.md": "ACTIVE: lean Controller → Service → DbContext; no MediatR/repository/UoW.\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "none",
+        "severity": null,
+        "leanArchitectureAccepted": true
+      },
+      "nonFindings": [
+        "missing-mediatr",
+        "missing-generic-repository",
+        "missing-unit-of-work"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "none",
+      "evidenceRequired": [
+        "project decision or supplied contract",
+        "relevant implementation shape"
+      ],
+      "recommendation": "Report no finding unless additional contradictory evidence is present.",
+      "falsePositiveConditions": [
+        "missing-mediatr",
+        "missing-generic-repository",
+        "missing-unit-of-work"
+      ]
+    },
+    {
+      "id": "review-valid-no-fk",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-database"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this database-first project that intentionally omits physical FKs and validates parent existence in services. Do not flag missing FKs as a defect.",
+      "files": {
+        "memory/DECISIONS.md": "ACTIVE: no physical foreign keys; services perform existence checks.\n",
+        "database/schema.sql": "CREATE TABLE dbo.Children (Id INT NOT NULL PRIMARY KEY, ParentId INT NOT NULL);\n",
+        "src/Services/ChildrenService.cs": "if (!await db.Parents.AnyAsync(p => p.Id == parentId, ct)) throw new NotFoundException();\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "none",
+        "severity": null,
+        "noFkConventionAccepted": true
+      },
+      "nonFindings": [
+        "missing-physical-foreign-keys"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "none",
+      "evidenceRequired": [
+        "project decision or supplied contract",
+        "relevant implementation shape"
+      ],
+      "recommendation": "Report no finding unless additional contradictory evidence is present.",
+      "falsePositiveConditions": [
+        "missing-physical-foreign-keys"
+      ]
+    },
+    {
+      "id": "review-valid-single-health",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review health endpoints for a foundation API that approved a single GET /health. Do not require /health/live or /health/ready without an explicit requirement.",
+      "files": {
+        "memory/DECISIONS.md": "ACTIVE: single GET /health foundation endpoint.\n",
+        "src/Controllers/HealthController.cs": "[HttpGet(\"/health\")] public IActionResult Get() => Ok();\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "none",
+        "severity": null,
+        "singleHealthAccepted": true
+      },
+      "nonFindings": [
+        "missing-health-live",
+        "missing-health-ready"
+      ],
+      "validationCommand": "dotnet test examples/document-upload/DocumentUpload.slnx -c Release --filter Health_returns_ok",
+      "severity": "none",
+      "evidenceRequired": [
+        "project decision or supplied contract",
+        "relevant implementation shape"
+      ],
+      "recommendation": "Report no finding unless additional contradictory evidence is present.",
+      "falsePositiveConditions": [
+        "missing-health-live",
+        "missing-health-ready"
+      ]
+    },
+    {
+      "id": "review-missing-cancellation",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review async API/database calls for cancellation propagation. Do not require cancellation on APIs that have no async or cancelable work.",
+      "files": {
+        "src/Services/ProductsService.cs": "public Task<Product?> GetAsync(int id, CancellationToken ct) => db.Products.SingleOrDefaultAsync(p => p.Id == id);\n",
+        "src/Controllers/ProductsController.cs": "public Task<IActionResult> Get(int id) => service.GetAsync(id).ContinueWith<IActionResult>(x => Ok(x.Result));\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "cancellation-not-propagated",
+        "severity": "P2"
+      },
+      "nonFindings": [
+        "synchronous bounded operation",
+        "background work with an explicit independent lifetime"
+      ],
+      "evidenceRequired": [
+        "src/Services/ProductsService.cs",
+        "src/Controllers/ProductsController.cs"
+      ],
+      "recommendation": "Pass the request CancellationToken through controller, service and EF async operations; avoid ContinueWith for request orchestration.",
+      "falsePositiveConditions": [
+        "synchronous bounded operation",
+        "background work with an explicit independent lifetime"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2"
+    },
+    {
+      "id": "review-di-lifetime",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review DI lifetime safety. A singleton captures a scoped DbContext and is shared between requests.",
+      "files": {
+        "src/Program.cs": "services.AddDbContext<AppDbContext>();\nservices.AddSingleton<IOrdersService, OrdersService>();\n",
+        "src/Services/OrdersService.cs": "public sealed class OrdersService(AppDbContext db) : IOrdersService { }\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "singleton-captures-scoped-service",
+        "severity": "P1"
+      },
+      "nonFindings": [
+        "singleton does not depend on scoped state",
+        "factory creates a fresh scope for bounded background work"
+      ],
+      "evidenceRequired": [
+        "src/Program.cs",
+        "src/Services/OrdersService.cs"
+      ],
+      "recommendation": "Register the service as scoped (or redesign its dependencies) so DbContext lifetime remains request-scoped.",
+      "falsePositiveConditions": [
+        "singleton does not depend on scoped state",
+        "factory creates a fresh scope for bounded background work"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P1"
+    },
+    {
+      "id": "review-unbounded-query",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-database"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this public listing query for bounded result size and EF Core query behavior.",
+      "files": {
+        "src/Services/ProductsService.cs": "return await db.Products.Select(p => new ProductResponse(p.Id, p.Name)).ToListAsync(ct);\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "unbounded-list-query",
+        "severity": "P2"
+      },
+      "nonFindings": [
+        "dataset is contractually tiny and enforced by a database constraint",
+        "endpoint explicitly streams with back-pressure and documented limits"
+      ],
+      "evidenceRequired": [
+        "src/Services/ProductsService.cs"
+      ],
+      "recommendation": "Add validated pagination or a strict bounded Take and stable ordering; preserve projection and cancellation.",
+      "falsePositiveConditions": [
+        "dataset is contractually tiny and enforced by a database constraint",
+        "endpoint explicitly streams with back-pressure and documented limits"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2"
+    },
+    {
+      "id": "review-unsafe-upload",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review upload handling for filename trust, file limits, MIME/extension validation, request size, and cleanup after partial storage failure.",
+      "files": {
+        "src/Controllers/FilesController.cs": "var path = Path.Combine(root, file.FileName);\nawait using var output = File.Create(path);\nawait file.CopyToAsync(output);\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "unsafe-upload-path-and-limits",
+        "severity": "P1"
+      },
+      "nonFindings": [
+        "storage implementation discards client names and limits are proven at an upstream boundary",
+        "streaming pipeline enforces the same limits and cleanup contract"
+      ],
+      "evidenceRequired": [
+        "src/Controllers/FilesController.cs"
+      ],
+      "recommendation": "Use a generated storage key, enforce request and file limits before/during reading, validate policy/content as required, and define bounded cleanup for partial writes.",
+      "falsePositiveConditions": [
+        "storage implementation discards client names and limits are proven at an upstream boundary",
+        "streaming pipeline enforces the same limits and cleanup contract"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P1"
+    },
+    {
+      "id": "review-yarp-method-allowlist",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this public YARP route. The contract only permits GET and HEAD, but route config matches path only.",
+      "files": {
+        "appsettings.json": "\"Routes\": { \"public\": { \"ClusterId\": \"cms\", \"Match\": { \"Path\": \"/api/public/{**catch-all}\" } } }\n",
+        "api-contract.md": "Approved methods: GET, HEAD.\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "yarp-methods-not-allowlisted",
+        "severity": "P1"
+      },
+      "nonFindings": [
+        "the proxy intentionally forwards all methods and downstream authorization/contract explicitly permits them"
+      ],
+      "evidenceRequired": [
+        "appsettings.json",
+        "api-contract.md"
+      ],
+      "recommendation": "Constrain the route match to approved methods and test rejected methods through the proxy configuration.",
+      "falsePositiveConditions": [
+        "the proxy intentionally forwards all methods and downstream authorization/contract explicitly permits them"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P1"
+    },
+    {
+      "id": "review-service-responsibility",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review whether this service mixes unrelated responsibilities. The project decision assigns user notification to a separate capability; this service also owns product catalog CRUD and report email rendering.",
+      "files": {
+        "memory/DECISIONS.md": "Product persistence and notification delivery are independent capabilities with separate owners.\n",
+        "src/Services/ProductsService.cs": "public Task<Product?> GetAsync(int id, CancellationToken ct) => db.Products.FindAsync([id], ct).AsTask();\npublic Task SendMonthlyReportEmailAsync(CancellationToken ct) => email.SendAsync(RenderMonthlyReport(), ct);\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "service-mixes-independent-responsibilities",
+        "severity": "P2"
+      },
+      "nonFindings": [
+        "related aggregate operations share policy and change reasons",
+        "no evidence of independent responsibility or owner"
+      ],
+      "evidenceRequired": [
+        "memory/DECISIONS.md",
+        "src/Services/ProductsService.cs"
+      ],
+      "recommendation": "Move the independently owned notification workflow to the existing notification capability; keep cohesive product operations together and avoid splitting solely by class length.",
+      "falsePositiveConditions": [
+        "related aggregate operations share policy and change reasons",
+        "no evidence of independent responsibility or owner"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2"
+    },
+    {
+      "id": "review-generic-repository",
+      "skills": [
+        "dotnet-code-review"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review this generic repository layer in a simple EF Core API. It duplicates DbSet/Add/SaveChanges and provides no additional policy, query behavior or storage abstraction.",
+      "files": {
+        "src/Data/IRepository.cs": "public interface IRepository<T> where T : class { IQueryable<T> Query(); void Add(T entity); Task SaveChangesAsync(CancellationToken ct); }\n",
+        "src/Data/Repository.cs": "public sealed class Repository<T>(AppDbContext db) : IRepository<T> where T : class { public IQueryable<T> Query()=>db.Set<T>(); public void Add(T entity)=>db.Set<T>().Add(entity); public Task SaveChangesAsync(CancellationToken ct)=>db.SaveChangesAsync(ct); }\n",
+        "src/Services/ItemsService.cs": "return await repository.Query().Where(x=>x.Id==id).SingleOrDefaultAsync(ct);\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "generic-repository-only-forwards-ef",
+        "severity": "P2"
+      },
+      "nonFindings": [
+        "repository adds domain policy, a real provider boundary, or cross-cutting behavior",
+        "the consumer mandates repositories"
+      ],
+      "evidenceRequired": [
+        "src/Data/IRepository.cs",
+        "src/Data/Repository.cs",
+        "src/Services/ItemsService.cs"
+      ],
+      "recommendation": "Remove the forwarding abstraction and inject the DbContext into the cohesive service unless a concrete cross-provider, policy, or test seam requirement justifies the repository.",
+      "falsePositiveConditions": [
+        "repository adds domain policy, a real provider boundary, or cross-cutting behavior",
+        "the consumer mandates repositories"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2"
+    },
+    {
+      "id": "review-catchall-503",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "Review exception mapping. This handler returns 503 for every exception including programming defects and validation failures.",
+      "files": {
+        "src/Infrastructure/ApiExceptionHandler.cs": "catch (Exception exception) { logger.LogError(exception, \"failed\"); return StatusCode(503, \"unavailable\"); }\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "all-exceptions-mapped-to-503",
+        "severity": "P1"
+      },
+      "nonFindings": [
+        "service is a deliberately uniform gateway contract with documented, tested error translation",
+        "snippet is not the active handler"
+      ],
+      "evidenceRequired": [
+        "src/Infrastructure/ApiExceptionHandler.cs"
+      ],
+      "recommendation": "Map known exception types to their documented status, preserve cancellation, and return a generic 500 for unexpected failures while logging a trace identifier.",
+      "falsePositiveConditions": [
+        "service is a deliberately uniform gateway contract with documented, tested error translation",
+        "snippet is not the active handler"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P1"
+    },
+    {
+      "id": "review-admin-missing-authorization",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "The project contract requires authenticated Admin access for this destructive endpoint. Review authorization against that explicit requirement.",
+      "files": {
+        "api-contract.md": "DELETE /api/admin/users/{id} requires the configured Admin policy.\n",
+        "src/Controllers/Admin/UsersController.cs": "[ApiController]\n[Route(\"api/admin/users\")]\npublic sealed class UsersController(IUsersService service) : ControllerBase { [HttpDelete(\"{id:int}\")] public Task Delete(int id, CancellationToken ct) => service.DeleteAsync(id, ct); }\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "required-admin-authorization-missing",
+        "severity": "P0"
+      },
+      "nonFindings": [
+        "authorization is enforced by a verified global/fallback policy",
+        "contract does not classify this route as protected"
+      ],
+      "evidenceRequired": [
+        "api-contract.md",
+        "src/Controllers/Admin/UsersController.cs"
+      ],
+      "recommendation": "Apply the project-configured authorization policy at the endpoint/controller and add an integration test proving anonymous/non-admin requests are rejected. Do not invent an identity provider.",
+      "falsePositiveConditions": [
+        "authorization is enforced by a verified global/fallback policy",
+        "contract does not classify this route as protected"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P0"
+    },
+    {
+      "id": "review-request-validation-missing",
+      "skills": [
+        "dotnet-code-review",
+        "dotnet-api-design"
+      ],
+      "kind": "static-review-fixture",
+      "prompt": "The API contract requires Name between 1 and 80 characters. Review the request contract and endpoint validation.",
+      "files": {
+        "api-contract.md": "POST /api/items: Name is required and max length 80.\n",
+        "src/DTOs/Requests/CreateItemRequest.cs": "public sealed record CreateItemRequest(string Name);\n",
+        "src/Controllers/ItemsController.cs": "public Task<IActionResult> Create(CreateItemRequest request, CancellationToken ct) => service.CreateAsync(request, ct);\n"
+      },
+      "allowedChanges": [],
+      "expect": {
+        "issue": "contract-validation-missing",
+        "severity": "P2"
+      },
+      "nonFindings": [
+        "equivalent validation occurs in a verified shared boundary/service",
+        "the contract permits empty or unbounded names"
+      ],
+      "evidenceRequired": [
+        "api-contract.md",
+        "src/DTOs/Requests/CreateItemRequest.cs",
+        "src/Controllers/ItemsController.cs"
+      ],
+      "recommendation": "Enforce the required length/empty constraints at the request boundary and retain domain checks where other entry points can bypass HTTP validation.",
+      "falsePositiveConditions": [
+        "equivalent validation occurs in a verified shared boundary/service",
+        "the contract permits empty or unbounded names"
+      ],
+      "validationCommand": "node scripts/evaluate-skills.mjs --check",
+      "severity": "P2"
+    }
+  ]
+}

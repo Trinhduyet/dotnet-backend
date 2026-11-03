@@ -1,0 +1,21 @@
+stages:
+  - verify
+
+common:verify:
+  stage: verify
+  image: node:24-bookworm
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends python3-venv
+    - python3 -m venv .venv
+    - .venv/bin/python -m pip install -r requirements-validation.txt
+  script:
+    - export PATH="$CI_PROJECT_DIR/.venv/bin:$PATH"
+    - node scripts/verify-toolkit.mjs
+
+examples:verify:
+  stage: verify
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  script:
+    - dotnet restore examples/Examples.slnx --configfile examples/NuGet.Config
+    - dotnet test examples/Examples.slnx --configuration Release --nologo --no-restore
+    - dotnet format examples/Examples.slnx --verify-no-changes --no-restore --verbosity quiet

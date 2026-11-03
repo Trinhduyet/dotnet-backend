@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "codex": { "project": ".agents", "user": ".agents", "skills": "skills", "source": "https://developers.openai.com/codex/skills" },
+  "cursor": { "project": ".cursor", "user": ".cursor", "skills": "skills", "source": "https://cursor.com/docs/skills" },
+  "claude": { "project": ".claude", "user": ".claude", "skills": "skills", "source": "https://code.claude.com/docs/en/skills" }
+}
