@@ -47,7 +47,7 @@ The implemented packaging command verifies first and refuses to overwrite an exi
 archive. Use a destination outside the source checkout:
 
 ```sh
-node scripts/package-release.mjs --output ../dotnet-backend-common-2.2.2.zip
+node scripts/package-release.mjs --output ../dotnet-backend-common-2.2.3.zip
 ```
 
 Python uses only its standard ZIP library for packaging; verification uses the pinned

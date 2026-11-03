@@ -1,18 +1,25 @@
 ---
 name: dotnet-development
-description: Implement or fix an ASP.NET Core or .NET feature with scoped changes, DTO boundaries, dependency injection, cancellation and meaningful verification. Use for backend implementation requests, not review-only or infrastructure-only work.
+description: Create a new ASP.NET Core/.NET backend application or implement and fix features in an existing one, with clear DTO boundaries, dependency injection, cancellation and meaningful verification. Use for new API/project creation and backend implementation requests, not review-only or infrastructure-only work.
 ---
 
 # .NET development
 
-1. Understand acceptance criteria. Read consumer AGENTS.md, applicable scoped
-   instructions, approved decisions and contracts. Inspect Git status and affected
-   source; preserve human edits. Do not scan everything.
+1. Understand acceptance criteria. For an existing project, read consumer AGENTS.md,
+   scoped instructions, approved decisions and contracts. Inspect Git status and
+   affected source; preserve human edits. In a new project, inspect the available SDK
+   and requirements before choosing an app shape or dependencies.
 2. Identify actual architecture, DI lifetimes, HTTP/data boundaries and validation
-   commands. Design the smallest coherent change; plan only when useful. Common
+   commands. For a new application without approved architecture, start with the
+   smallest runnable API and a test project; Controller → Service → DTO is a useful
+   default, with EF Core/DbContext only when persistence is required. Choose an SDK
+   supported in the target environment. Do not assume SQL Server, authentication,
+   Blob Storage, cloud deployment or additional layers without requirements.
+   Design the smallest coherent change; plan only when useful. Common
    defaults never override approved business/security requirements. Surface conflicts
    and stop the affected action while continuing independent authorized work.
-3. Implement in existing owners. Controllers bind/authorize/map HTTP; Services own
+3. Implement in existing owners or create only the owners needed by the new feature.
+   Controllers bind/authorize/map HTTP; Services own
    application logic; DTOs separate client input from persistence. DbContext may be
    injected directly. No interface-per-class, CQRS or repository mandate.
 4. Keep multipart parsing, binding and transport-size limits at the HTTP edge. Move
@@ -30,7 +37,9 @@ description: Implement or fix an ASP.NET Core or .NET feature with scoped change
    when the project uses DTO folders. Do not invent identity settings. Read
    [focused examples](references/examples.md) and
    [anti-patterns](references/anti-patterns.md) only when these patterns are needed.
-6. Add meaningful behavior/regression tests. Run applicable consumer format/build/test
+6. Add meaningful behavior/regression tests. For a new app, verify it restores,
+   builds, starts locally when feasible, and returns expected HTTP responses. Run
+   applicable consumer format/build/test
    gates. A different provider's tests do not prove production semantics. Do not edit
    the harness to disguise an application failure.
 7. Review the actual diff for scope, security and compatibility. Update owning docs

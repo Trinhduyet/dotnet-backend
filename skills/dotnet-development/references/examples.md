@@ -1,6 +1,7 @@
 # Focused .NET patterns
 
-Use these fragments in existing project owners; framework/packages remain project-selected.
+Use these fragments in existing project owners or a minimal new API; framework/packages
+remain project-selected.
 For DTO-in-Services, thick uploads, identity options and uniqueness anti-patterns see
 [anti-patterns](anti-patterns.md).
 

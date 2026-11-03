@@ -1,8 +1,10 @@
 # Start a .NET consumer
 
-For an **existing** .NET project that only needs AI skills, use the
-[one-command quick start](../README.md#install-in-one-command). The steps below
-cover creating a new application and the optional toolkit-managed installation.
+For a **new or existing** .NET project, start with the
+[one-command skill installation](../README.md#install-in-one-command). In an empty
+project repository, ask the AI agent to use `dotnet-development` to create the API
+and tests. The manual SDK commands below are an alternative when you want to
+scaffold the application yourself; they are not a requirement of Common.
 
 Use [installation](INSTALLATION.md) for toolkit copy/update/uninstall/recovery; that
 page owns those procedures. This page owns application setup and the optional full

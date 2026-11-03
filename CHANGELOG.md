@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.3 — 2026-11-03
+
+- Clarify that Common guides AI to create new .NET applications as well as improve
+  existing ones; it is a skills toolkit, not a pre-generated application template.
+- Expand the development skill's trigger/workflow for greenfield ASP.NET Core APIs,
+  with minimal architecture, explicit SDK choice and runnable HTTP tests.
+- Align README and onboarding guidance with AI-first project creation.
+
 ## 2.2.2 — 2026-11-03
 
 - Rewrite the human-first README in English and reduce the quick start to one

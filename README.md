@@ -1,14 +1,14 @@
 # dotnet-backend-common
 
-**Reusable AI coding skills for maintainable ASP.NET Core applications.** Works with **Cursor, Claude Code, and Codex**.
+**An AI Skills Toolkit for creating and developing .NET applications**, from a new ASP.NET Core API to an existing production codebase. Works with **Cursor, Claude Code, and Codex**.
 
 > Help AI write clear, testable .NET code that follows *your project's architecture*—without forcing CQRS, MediatR, generic repositories, or extra layers.
 
-**Version:** `2.2.2` · This is a skills toolkit, **not** a NuGet package, application template, or runtime framework.
+**Version:** `2.2.3` · Skills guide AI to generate and improve applications; Common is **not** a NuGet package or a `dotnet new` scaffolding template.
 
 ## Install in one command
 
-Open a terminal **in your existing .NET project** and run:
+Open a terminal **in your project repository** (new or existing) and run:
 
 ```sh
 npx -y skills@1.7.6 add Trinhduyet/dotnet-backend
@@ -36,7 +36,7 @@ The installer adds skill instructions to your project. It **does not replace** y
 
 | Skill | Use it for |
 | --- | --- |
-| [dotnet-development](skills/dotnet-development/SKILL.md) | Implementing or changing .NET features |
+| [dotnet-development](skills/dotnet-development/SKILL.md) | Creating new .NET applications or implementing features |
 | [dotnet-code-review](skills/dotnet-code-review/SKILL.md) | Finding concrete correctness, security, and performance defects |
 | [dotnet-testing](skills/dotnet-testing/SKILL.md) | Unit, API integration, and regression tests |
 | [dotnet-debugging](skills/dotnet-debugging/SKILL.md) | Reproducing bugs and finding root causes |
@@ -46,7 +46,15 @@ The installer adds skill instructions to your project. It **does not replace** y
 
 Each skill is independently usable. Install only what helps your current project.
 
-## Use the skills in a .NET project
+## Create a new .NET application
+
+Start in a new project repository, install the skills using the command above, then ask your agent:
+
+> Use dotnet-development to create a small ASP.NET Core Web API for managing items. Choose an installed, supported .NET SDK, use Controllers, Services and request/response DTOs, configure DI and ProblemDetails, propagate CancellationToken, and add runnable HTTP tests. Keep it lean; do not invent authentication, database infrastructure, or extra architecture layers without requirements.
+
+The agent creates the application source; Common supplies its engineering workflow and checks. See [Getting started](docs/getting-started.md) and the [simple-api example](examples/simple-api/README.md).
+
+## Improve an existing .NET project
 
 1. Keep your project instructions and approved architecture.
 2. Ask your AI agent to use the relevant skill. For example:
@@ -55,7 +63,7 @@ Each skill is independently usable. Install only what helps your current project
 
 3. Review the diff and run **your project's** build/test gates before accepting code.
 
-For new applications, see [Getting started](docs/getting-started.md). For architecture decisions, see [Architecture](docs/architecture.md) and [Coding conventions](rules/coding.md).
+For architecture decisions, see [Architecture](docs/architecture.md) and [Coding conventions](rules/coding.md).
 
 ## Runnable examples
 
