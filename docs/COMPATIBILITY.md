@@ -2,6 +2,12 @@
 
 Directory sources verified 2026-10-14:
 
+On 2026-11-03, the third-party Skills CLI `1.7.6` discovered all seven skills from
+`Trinhduyet/dotnet-backend` and copied three selected skills into a disposable
+Codex project on Linux. This verifies the CLI's filesystem installation only; it
+does not establish model activation/behavior or Windows and other agent testing.
+The CLI has its own lock/update lifecycle, separate from the native installer below.
+
 | Host | Project | User | Primary source |
 | --- | --- | --- | --- |
 | Codex | `.agents/skills/` | `~/.agents/skills/` | [OpenAI skills documentation](https://developers.openai.com/codex/skills) |

@@ -1,5 +1,9 @@
 # Start a .NET consumer
 
+For an **existing** .NET project that only needs AI skills, use the
+[one-command quick start](../README.md#install-in-one-command). The steps below
+cover creating a new application and the optional toolkit-managed installation.
+
 Use [installation](INSTALLATION.md) for toolkit copy/update/uninstall/recovery; that
 page owns those procedures. This page owns application setup and the optional full
 consumer gate. Native skills use the consumer's existing validation commands.

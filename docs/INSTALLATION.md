@@ -1,12 +1,57 @@
 # Installation and ownership
 
-Use a trusted version-pinned checkout/archive, Node 22/24 and Python 3.11+ with
-PyYAML. For maintainers, activate a venv and install `requirements-validation.txt`;
-this includes the official specification validator. The **agent reading installed
-skills** needs no toolkit runtime dependency. Installer/verification prerequisites
-remain in the toolkit environment, not in application package references.
+## One-command install (recommended for individual projects)
 
-## Selected native copies (default onboarding)
+From the root of an existing project, on Windows, Linux or macOS:
+
+```sh
+npx -y skills@1.7.6 add Trinhduyet/dotnet-backend
+```
+
+Choose the relevant skills and agent interactively. This uses the third-party
+[Skills CLI](https://github.com/vercel-labs/skills) with its CLI version pinned to
+`1.7.6`. It requires Node.js/npm and Git, but **not** Python, a manual clone or a
+.NET SDK just to install skills.
+
+For a tested non-interactive Codex installation of the three starter skills:
+
+```sh
+npx -y skills@1.7.6 add Trinhduyet/dotnet-backend --skill dotnet-development --skill dotnet-code-review --skill dotnet-testing --agent codex --copy --yes
+```
+
+Use `--agent cursor` or `--agent claude-code` for those hosts. `--copy` avoids
+symlink requirements. By default, installation is **project-level**; add `--global`
+only when you intend user-wide access. The CLI writes its own skill files and
+`skills-lock.json`; it does not overwrite AGENTS.md. It installs the selected
+canonical skill folders, **not** this toolkit's shared `rules/` copy or native
+hash/recovery manifest. The skills remain usable independently; keep approved
+project rules in the project's own instructions.
+
+Skills CLI operations (run in the same project):
+
+```sh
+npx -y skills@1.7.6 list
+npx -y skills@1.7.6 update
+npx -y skills@1.7.6 remove dotnet-development
+```
+
+The source shorthand reads the current GitHub branch. For production adoption,
+review source and use an approved immutable revision through a vetted installation
+workflow. Pinning the CLI version does **not** pin skill content. Do not mix Skills
+CLI and the toolkit's native installer for the same installed skill, or assume
+discovery and real AI task quality merely from copied files. Inspect the CLI's
+planned changes and respect project security policies.
+
+## Advanced native copies (controlled installation)
+
+For the toolkit's own hash-tracked installer, use a trusted version-pinned
+checkout/archive, Node 22/24 and Python 3.11+ with PyYAML. Maintainers should use
+an isolated venv with `requirements-validation.txt` for the official specification
+validator. These prerequisites apply to toolkit verification/native installation,
+not to the agent reading an installed skill. They do not affect application NuGet
+packages.
+
+### Selected native copies
 
 From the toolkit checkout, with an existing target directory:
 

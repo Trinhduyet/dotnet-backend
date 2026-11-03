@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.2 — 2026-11-03
+
+- Rewrite the human-first README in English and reduce the quick start to one
+  tested `npx skills` command from an existing project.
+- Document the third-party Skills CLI as the simple onboarding route, including
+  its separate lifecycle, source-pinning trade-off and native-installer differences.
+- Retain the hash-tracked native installer and full-copy recovery as advanced
+  options; no runtime dependency or consumer architecture policy changes.
+
 ## 2.2.1 — 2026-11-03
 
 - Seed database-first HTTP test data from the built application host instead of

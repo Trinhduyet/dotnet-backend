@@ -1,112 +1,95 @@
 # dotnet-backend-common
 
-**Bộ kỹ năng AI Coding cho ASP.NET Core / .NET** — dùng được với **Cursor, Claude Code và Codex**.
+**Reusable AI coding skills for maintainable ASP.NET Core applications.** Works with **Cursor, Claude Code, and Codex**.
 
-> **Mục tiêu:** AI viết code dễ đọc, dễ test, đúng kiến trúc của từng project; không tự thêm CQRS, MediatR, Generic Repository hay Clean Architecture khi chưa cần.
+> Help AI write clear, testable .NET code that follows *your project's architecture*—without forcing CQRS, MediatR, generic repositories, or extra layers.
 
-**Phiên bản:** `2.2.1` · **Không** phải thư viện NuGet hay framework runtime. Common cung cấp skills, quy tắc kỹ thuật, ví dụ và công cụ kiểm tra.
+**Version:** `2.2.2` · This is a skills toolkit, **not** a NuGet package, application template, or runtime framework.
 
-## 1. Common hoạt động thế nào?
+## Install in one command
+
+Open a terminal **in your existing .NET project** and run:
+
+```sh
+npx -y skills@1.7.6 add Trinhduyet/dotnet-backend
+```
+
+Select your coding agent and the skills you need. Start with **dotnet-development**, **dotnet-code-review**, and **dotnet-testing**.
+
+Requires Node.js/npm and Git. No Python environment, manual repository clone, or .NET SDK is needed just to install skills. The command uses the open-source [Skills CLI](https://github.com/vercel-labs/skills), not a custom bootstrap script.
+
+For automated installation, global scope, Windows-specific troubleshooting, version pinning, or the toolkit's hash-protected native installer, see [Installation & updates](docs/INSTALLATION.md).
+
+## How it works
 
 ```mermaid
 flowchart TD
-    A["Common: skills/ (nguồn duy nhất)"] --> B["Chọn và cài skills"]
+    A["Canonical skills/ in this repository"] --> B["Install selected skills"]
     B --> C["Cursor: .cursor/skills/"]
     B --> D["Claude Code: .claude/skills/"]
     B --> E["Codex: .agents/skills/"]
 ```
 
-Skills hướng dẫn **cách AI thực hiện công việc**. Project của bạn vẫn quyết định kiến trúc, API contract, database-first/code-first, authentication và quy tắc nghiệp vụ trong `AGENTS.md` hoặc tài liệu riêng. Bộ cài **không ghi đè** các file đó.
+The installer adds skill instructions to your project. It **does not replace** your `AGENTS.md`, business rules, API contracts, security policies, or existing CI/CD pipeline. Your project owns architecture, authentication, database strategy, and deployment decisions.
 
-## 2. Cài nhanh
+## Choose your skills
 
-**Yêu cầu:** Node.js 22/24, Python 3.11+; thư mục project đích phải tồn tại. .NET SDK chỉ cần khi chạy ví dụ hoặc build/test ứng dụng.
-
-**Windows PowerShell** (ví dụ cài 3 skills nền tảng cho Codex):
-
-```powershell
-git clone https://github.com/Trinhduyet/dotnet-backend.git dotnet-backend-common
-cd dotnet-backend-common
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements-validation.txt
-node scripts/install.mjs --agent codex --target ..\my-api --skills dotnet-development,dotnet-code-review,dotnet-testing --dry-run
-node scripts/install.mjs --agent codex --target ..\my-api --skills dotnet-development,dotnet-code-review,dotnet-testing
-```
-
-**Linux/macOS** (ví dụ cho Claude Code):
-
-```sh
-git clone https://github.com/Trinhduyet/dotnet-backend.git dotnet-backend-common
-cd dotnet-backend-common
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements-validation.txt
-node scripts/install.mjs --agent claude --target ../my-api --skills dotnet-development,dotnet-code-review,dotnet-testing --dry-run
-node scripts/install.mjs --agent claude --target ../my-api --skills dotnet-development,dotnet-code-review,dotnet-testing
-```
-
-- Đổi `--agent` thành `cursor`, `claude` hoặc `codex` tùy công cụ.
-- `--dry-run` chỉ xem trước; bỏ tùy chọn này để cài.
-- Các lệnh trên clone `main` để thử nghiệm. Với project quan trọng, **checkout commit/tag đã review** trước khi cài.
-- Mở lại phiên AI và kiểm tra skill có được phát hiện; copy file thành công chưa chứng minh AI đã sử dụng skill.
-
-Chi tiết Windows/user-level, lỗi cài đặt và rollback: [Hướng dẫn cài đặt](docs/INSTALLATION.md) · [Tương thích công cụ](docs/COMPATIBILITY.md).
-
-## 3. Có những skills nào?
-
-| Skill | Khi nào dùng |
+| Skill | Use it for |
 | --- | --- |
-| [dotnet-development](skills/dotnet-development/SKILL.md) | Implement hoặc sửa feature .NET |
-| [dotnet-code-review](skills/dotnet-code-review/SKILL.md) | Review correctness, security, hiệu năng, kiến trúc |
-| [dotnet-testing](skills/dotnet-testing/SKILL.md) | Unit, API integration và regression tests |
-| [dotnet-debugging](skills/dotnet-debugging/SKILL.md) | Tìm root cause trước khi sửa bug |
-| [dotnet-api-design](skills/dotnet-api-design/SKILL.md) | DTO, HTTP status, validation, ProblemDetails, OpenAPI |
-| [dotnet-database](skills/dotnet-database/SKILL.md) | SQL Server, EF Core, database-first, truy vấn |
-| [dotnet-deployment](skills/dotnet-deployment/SKILL.md) | Docker, CI/CD, health, readiness, rollback |
+| [dotnet-development](skills/dotnet-development/SKILL.md) | Implementing or changing .NET features |
+| [dotnet-code-review](skills/dotnet-code-review/SKILL.md) | Finding concrete correctness, security, and performance defects |
+| [dotnet-testing](skills/dotnet-testing/SKILL.md) | Unit, API integration, and regression tests |
+| [dotnet-debugging](skills/dotnet-debugging/SKILL.md) | Reproducing bugs and finding root causes |
+| [dotnet-api-design](skills/dotnet-api-design/SKILL.md) | DTOs, validation, HTTP status, ProblemDetails, and OpenAPI |
+| [dotnet-database](skills/dotnet-database/SKILL.md) | EF Core, SQL Server, database-first, and query performance |
+| [dotnet-deployment](skills/dotnet-deployment/SKILL.md) | Docker, CI/CD, readiness checks, and rollback planning |
 
-**Nên bắt đầu với 3 skills đầu tiên.** Chỉ cài thêm skill khi project thực sự cần. Mỗi skill có hướng dẫn độc lập; không yêu cầu đưa toàn bộ Common vào ứng dụng.
+Each skill is independently usable. Install only what helps your current project.
 
-## 4. Dùng trong project .NET
+## Use the skills in a .NET project
 
-1. Giữ nguyên `AGENTS.md`, kiến trúc và tiêu chuẩn bảo mật hiện có của project.
-2. Cài skills phù hợp, rồi yêu cầu AI chọn skill theo công việc. Ví dụ:
+1. Keep your project instructions and approved architecture.
+2. Ask your AI agent to use the relevant skill. For example:
 
-   > Dùng dotnet-development để thêm endpoint GET /api/items vào code hiện tại. Đọc AGENTS.md trước; giữ Controller → Service → DbContext, DTO rõ ràng, CancellationToken và viết integration test. Không thêm repository/CQRS nếu chưa có yêu cầu.
+   > Use dotnet-development to add a GET /api/items endpoint. Read AGENTS.md first, follow the existing Controller → Service → DbContext pattern, define a response DTO, propagate CancellationToken, and add an HTTP integration test. Do not introduce new architecture layers.
 
-3. Review diff và chạy **build/test của chính project**. Skill không tự cho phép deploy, sửa database production hay push code.
+3. Review the diff and run **your project's** build/test gates before accepting code.
 
-Project mới: [Getting started](docs/getting-started.md) · Quy ước nền: [Architecture](docs/architecture.md) và [Coding rules](rules/coding.md).
+For new applications, see [Getting started](docs/getting-started.md). For architecture decisions, see [Architecture](docs/architecture.md) and [Coding conventions](rules/coding.md).
 
-## 5. Ví dụ và kiểm tra chất lượng
+## Runnable examples
 
-| Ví dụ | Minh họa |
+| Example | What it shows |
 | --- | --- |
-| [simple-api](examples/simple-api/README.md) | Controller → Service → EF Core/SQLite, DTO, validation, HTTP tests |
-| [sqlserver-database-first](examples/sqlserver-database-first/README.md) | SQL script chuẩn, EF mapping, truy vấn có giới hạn |
-| [document-upload](examples/document-upload/README.md) | Controller mỏng, giới hạn file, service upload/cleanup |
+| [simple-api](examples/simple-api/README.md) | Controller → Service → EF Core/SQLite, DTOs, and HTTP tests |
+| [sqlserver-database-first](examples/sqlserver-database-first/README.md) | SQL schema ownership, explicit EF mapping, and bounded queries |
+| [document-upload](examples/document-upload/README.md) | Thin controller, upload limits, service coordination, and cleanup |
+
+Maintainers can verify the toolkit from a reviewed checkout:
 
 ```sh
 node scripts/verify-toolkit.mjs
 dotnet test examples/Examples.slnx -c Release --nologo
 ```
 
-Lệnh đầu kiểm tra skills, installer, references, scripts và evaluation fixtures; lệnh thứ hai cần .NET SDK 10. Test của ví dụ database-first **không thay thế** kiểm thử trên SQL Server thật.
+The first command needs the [validation prerequisites](docs/INSTALLATION.md); the second needs .NET SDK 10. In-memory tests do **not** prove SQL Server-specific behavior.
 
-AI harness có [30 evaluation scenarios](evals/README.md), gồm cả trường hợp **không nên kích hoạt skill**. Validator/test fixtures thành công **không có nghĩa** AI đã xử lý đúng bài toán thực tế — cần chạy task với agent và lưu bằng chứng. [Cách đánh giá](docs/SKILL-AUTHORING.md).
+The [evaluation suite](evals/README.md) includes positive and negative skill-activation cases. Passing static fixtures does **not** prove an AI agent follows a skill; real evaluations require agent traces and executed-test evidence.
 
-File [`.gitlab-ci.yml`](.gitlab-ci.yml) định nghĩa job kiểm tra, nhưng GitHub không tự chạy cấu hình GitLab này. Không có deploy hoặc phát hành marketplace tự động.
+## Update or remove skills
 
-## 6. Cập nhật hoặc gỡ skills
+Run from the same project:
 
 ```sh
-node scripts/install.mjs --agent codex --target ../my-api --status
-node scripts/install.mjs --agent codex --target ../my-api --uninstall --dry-run
-node scripts/install.mjs --agent codex --target ../my-api --uninstall
+npx -y skills@1.7.6 list
+npx -y skills@1.7.6 update
+npx -y skills@1.7.6 remove dotnet-development
 ```
 
-Để cập nhật, dùng **checkout phiên bản mới đã review** và chạy lại lệnh cài với `--dry-run` trước. Không dùng `--skills` khi update thì giữ lựa chọn cũ. Bộ cài kiểm tra hash để tránh ghi đè file do bạn sửa. Chế độ copy toàn bộ cũ (`.backend-common/`) vẫn được hỗ trợ khi bỏ `--agent`; xem [Installation](docs/INSTALLATION.md).
+These commands manage **Skills CLI installations**. The toolkit's native installer has its own status, update, recovery, and uninstall procedure—do not mix the two managers for the same skill. See [Installation & updates](docs/INSTALLATION.md).
+
+For production adoption, review the source and pin an approved version: the quick command reads the current GitHub source, which may change. Skills are executable instructions with the agent's permissions; neither installation nor validation is a security audit.
 
 ---
 
-**Tài liệu thêm:** [Development](docs/development-guide.md) · [Database](docs/database-guide.md) · [AI Coding](docs/ai-coding-guide.md) · [Release & migration](docs/RELEASE.md) · [Changelog](CHANGELOG.md) · [Đóng góp](CONTRIBUTING.md) · [MIT License](LICENSE).
+[Compatibility](docs/COMPATIBILITY.md) · [Skill authoring & evaluations](docs/SKILL-AUTHORING.md) · [Development guide](docs/development-guide.md) · [Database guide](docs/database-guide.md) · [Release & migration](docs/RELEASE.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [License](LICENSE)
